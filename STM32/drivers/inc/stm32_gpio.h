@@ -2,6 +2,26 @@
 #define INC_STM32_GPIO_H_
 
 #include "stm32f1.h"
+
+#define GPIO_INPUT          0
+#define GPIO_OUTPUT         1
+#define GPIO_ALTE           2
+#define GPIO_ANALOG         3
+#define GPIO_MODE_IT_FL     4
+#define GPIO_MODE_IT_RS     5
+#define GPIO_MODE_IT_RFT    6
+//TYPE
+#define GPIO_TYPE_PP        0
+#define GPIO_TYPE_OD        1
+//SPEED
+#define GPIO_SPEED_L        0
+#define GPIO_SPEED_M        1
+#define GPIO_SPEED_H        2
+#define GPIO_SPEED_VH       3
+//PULL
+#define NO_PULL             0
+#define PULL_UP             1
+#define PULL_DOWN             2
 typedef struct  GPIO_PinDef
 {
     uint8_t GPIO_PinNumber;
