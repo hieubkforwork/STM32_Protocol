@@ -3,12 +3,12 @@
 
 #include<stdint.h>
 
-#define enable 1
-#define disable 0
-#define SET enable
-#define RESET disable
-#define GPIO_PIN_SET SET
-#define GPIO_PIN_RESET RESET
+#define ENABLE 1
+#define DISABLE 0
+#define SET ENABLE
+#define RESET DISABLE
+#define HIGH SET
+#define LOW RESET
 #define FLAG_SET SET
 #define FLAG_RESET RESET
 
@@ -86,6 +86,7 @@ lưu vào bộ đệm hoặc tối ưu hóa quá mức.*/
 // MEMORY MAP
 typedef struct GPIO_RegDef
 {
+     __vo uint32_t CRL;
      __vo uint32_t CRH;
      __vo uint32_t IDR;
      __vo uint32_t ODR;
@@ -118,6 +119,7 @@ typedef struct RCC_RegDef
     __vo uint32_t CFGR2;            //add:0x02C
 }RCC_RegDef;
 #define RCC ((RCC_RegDef*) RCC_BASEADDR)
+
 
 typedef struct EXTI_RegDef
 {
@@ -175,6 +177,13 @@ typedef struct USART_RegDef
 #define USART3 ((USART_RegDef*) USART3_BASEADDR)
 #define UART4 ((USART_RegDef*) UART4_BASEADDR)
 #define UART5 ((USART_RegDef*) UART5_BASEADDR)
+
+typedef struct AFIO_RegDef{
+    volatile uint32_t EVCR;       // Event control register          (offset: 0x00)
+    volatile uint32_t MAPR;       // AF remap and debug I/O config   (offset: 0x04)
+    volatile uint32_t EXTICR[4];  // External interrupt config regs  (offsets: 0x08–0x14)
+    volatile uint32_t MAPR2;      // Additional remap register       (offset: 0x1C)
+} AFIO_RegDef;
 
 //
 //======================================
@@ -238,13 +247,22 @@ typedef struct USART_RegDef
 
 #define AFIO_PCLK_DI() (RCC->APB2ENR &=~ (1 << 0))
 
+// RESET FOR GPIO PERIPHERALS
+#define GPIOA_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 2));  (RCC->APB2RSTR &= ~(1 << 2));  } while(0)
+#define GPIOB_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 3));  (RCC->APB2RSTR &= ~(1 << 3));  } while(0)
+#define GPIOC_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 4));  (RCC->APB2RSTR &= ~(1 << 4));  } while(0)
+#define GPIOD_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 5));  (RCC->APB2RSTR &= ~(1 << 5));  } while(0)
+#define GPIOE_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 6));  (RCC->APB2RSTR &= ~(1 << 6));  } while(0)
+#define GPIOF_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 7));  (RCC->APB2RSTR &= ~(1 << 7));  } while(0)
+#define GPIOG_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 8));  (RCC->APB2RSTR &= ~(1 << 8));  } while(0)
 
 
 
 
 
 
-
+void delay_ms(uint32_t ms);
+void delay_s(uint32_t s);
 
 
 
@@ -255,10 +273,14 @@ typedef struct USART_RegDef
 
 /*
 STUDY NOTE:
+//stm32f1.h
 STEP 1: Define memory address of specific registers
 (FLASH, ROM, SRAM, Regions: APB1, APB2, AHPB, PORT GPIO, I2C, UART, SPI, EXTI, AFIO)
 STEP 2: Mapping memory by using struct
 STEP 3: Config CLK for specific register (enable, disable)
+//stm32_gpio.h
+STEP 1: GPIO_Handle_T -> GPIO_RegDef
+                        . GPIO_PinDef
 
 
 */

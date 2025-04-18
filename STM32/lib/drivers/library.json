@@ -1,0 +1,9 @@
+{
+    "name": "drivers",
+    "version": "1.0.0",
+    "build": {
+      "includeDir": "inc",
+      "srcDir": "src"
+    }
+  }
+  
