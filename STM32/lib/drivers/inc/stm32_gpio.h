@@ -21,22 +21,29 @@
 #define GPIO_PIN_14                 14
 #define GPIO_PIN_15                 15
 //MODE
-#define GPIO_MODE_ANALOG             0x00
-#define GPIO_MODE_INFLOAT            0x01
-#define GPIO_MODE_INPUT              0x02
 
-#define GPIO_MODE_OUTPUT_PP          0x04
-#define GPIO_MODE_OUTPUT_OD          0x05
-#define GPIO_MODE_AF_PP              0x06
-#define GPIO_MODE_AF_OD              0x07
+#define INPUT                       0
+#define INPUT_PULLUP                1    
+#define INPUT_PULLDOWN              2
+#define OUTPUT                      3
+#define IT                          4
+
+#define GPIO_MODE_ANALOG             0
+#define GPIO_MODE_INFLOAT            1
+#define GPIO_MODE_INPUT              2
+
+#define GPIO_MODE_OUTPUT_PP          3
+#define GPIO_MODE_OUTPUT_OD          4
+#define GPIO_MODE_AF_PP              5
+#define GPIO_MODE_AF_OD              6
 //IT
-#define GPIO_MODE_IT_FS              0x09
-#define GPIO_MODE_IT_RS              0x10
+#define GPIO_MODE_IT_FS              7
+#define GPIO_MODE_IT_RS              8
 
 //SPEED
-#define GPIO_SPEED_10MHZ             0x01
-#define GPIO_SPEED_2MHZ              0x02
-#define GPIO_SPEED_50MHZ             0x03
+#define GPIO_SPEED_10MHZ             1
+#define GPIO_SPEED_2MHZ              2
+#define GPIO_SPEED_50MHZ             3
 //PULL
 #define GPIO_NOPULL                     2
 #define GPIO_PULLUP                     1
@@ -63,12 +70,12 @@ void GPIO_Init(GPIO_Handle_T* pGPIO_Handle);
 void GPIO_DeInit(GPIO_RegDef* pGPIOx);
 uint8_t digitalRead(GPIO_RegDef* pGPIOx, uint8_t pinNum);
 void digitalWrite(GPIO_RegDef* pGPIOx, uint8_t pinNum, uint8_t Value);
-uint8_t TogglePin(GPIO_RegDef* pGPIOx, uint8_t pinNum);
+void TogglePin(GPIO_RegDef* pGPIOx, uint8_t pinNum);
 
-void GPIO_IRQInterruptCfg(uint8_t IRQNum, uint8_t State);
-void GPIO_IRQPriorityCfg(uint8_t IRQNum, uint32_t IRQPriority);
-void GPIO_IRQHandling(uint8_t PinNum);
-
+void NVIC_IRQInterruptCfg(uint8_t IRQNum, uint8_t State);
+void NVIC_IRQPriorityCfg(uint8_t IRQNum, uint32_t IRQPriority);
+void NVIC_IRQHandling(uint8_t PinNum);
+void PinMode(GPIO_RegDef*pGPIOx, uint8_t PIN, uint8_t MODE);
 
 
 

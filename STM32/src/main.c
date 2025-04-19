@@ -1,45 +1,53 @@
-#include"stm32f1.h"
 #include "stm32_gpio.h"
-#include<stdint.h>
-// Hàm kiểm tra GPIO output
-void GPIO_Test(void) {
-    // Bật đồng hồ cho các GPIO
-    
-    // Cấu hình PA5 là output
-    GPIO_Handle_T GPIO_Handle;
-    GPIO_Handle.pGPIOx = GPIOD;  // Chọn GPIOA
-    GPIO_Handle.GPIO_PIN.GPIO_PinNumber = 2;  // Chọn chân PA5
-    GPIO_Handle.GPIO_PIN.GPIO_PinMode = GPIO_MODE_OUTPUT_PP;  // Chế độ Output
-    GPIO_Handle.GPIO_PIN.GPIO_PinSpeed = GPIO_SPEED_10MHZ;  // Tốc độ trung bình
-    GPIO_Handle.GPIO_PIN.GPIO_PinPull = GPIO_NOPULL;  // Không dùng pull-up/pull-down
 
-    // Cấu hình GPIO
-    GPIO_Init(&GPIO_Handle);
-
-    // Bật chân PA5 (LED sáng)
-    digitalWrite(GPIOD, 2, LOW);
-    delay_s(1);
-    // Tắt chân PA5 (LED tắt)
-    digitalWrite(GPIOD, 2, HIGH);
-    delay_s(1);
-
+void GPIO_Test(void)
+{
+    digitalWrite(GPIOD, 2, LOW); // LED luôn sáng ban đầu
 }
-
-
-
 // Hàm chính
-int main(void) {
-    
-
-    // Kiểm tra GPIO output (Bật/Tắt LED)
-    while (1) {
-        GPIO_Test();
+int main(void)
+{
+    PinMode(GPIOD, 2, OUTPUT);
+    PinMode(GPIOC, 1, IT);
+    while (1)
+    {
+        //   GPIO_Test();
     }
-
-    // Kiểm tra GPIO input (Bật/Tắt LED theo trạng thái công tắc)
-    // while (1) {
-    //     GPIO_InputTest();
-    // }
-
     return 0;
 }
+
+// EXTI
+// void EXTI0_IRQHandler(void){}
+void EXTI1_IRQHandler(void)
+{
+    NVIC_IRQHandling(1);
+    delay_ms(20); // thời gian debounce
+    // Debounce lần đầu
+    delay_ms(20);
+    if (digitalRead(GPIOC, 1) == 0)
+    { // PRESSED_STATE = 0
+        // Đợi thêm để phát hiện nhấn đè
+        uint32_t hold_time = 0;
+        while (digitalRead(GPIOC, 1) == 0)
+        {
+            delay_ms(10);
+            hold_time += 10;
+            if (hold_time >= 5000)
+            {
+                // Xử lý nhấn đè
+                // Ví dụ: bật LED
+                digitalWrite(GPIOD, 2, LOW);
+                return;
+            }
+        }
+
+        // Nếu thoát vòng lặp sớm => chỉ là nhấn ngắn
+        TogglePin(GPIOD, 2); // Nhấn thường: đổi trạng thái LED
+    }
+}
+// Tắt LED khi có ngắt
+
+// void EXTI2_IRQHandler(void){}
+// void EXTI3_IRQHandler(void){}
+// void EXTI9_5_IRQHandler(void){}
+// void EXTI15_10_IRQHandler(void){}

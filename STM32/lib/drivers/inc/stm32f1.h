@@ -3,6 +3,7 @@
 
 #include<stdint.h>
 
+
 #define ENABLE 1
 #define DISABLE 0
 #define SET ENABLE
@@ -11,6 +12,26 @@
 #define LOW RESET
 #define FLAG_SET SET
 #define FLAG_RESET RESET
+
+#define __vo volatile 
+/*Trình biên dịch thường tối ưu hóa mã nguồn 
+để giảm bớt số lần truy cập vào một biến trong 
+quá trình thực thi, giả sử giá trị của nó không 
+thay đổi trong suốt chương trình. Tuy nhiên, 
+trong các ứng dụng nhúng (như với các vi xử lý
+ hoặc các hệ thống phần cứng), các giá trị của
+  biến có thể thay đổi bởi các yếu tố bên ngoài như:
+
+//Bộ đếm thời gian (Timer)
+
+//Ngắt (Interrupts)
+
+Các thanh ghi phần cứng, đặc biệt là các thanh ghi
+ I/O (Input/Output) hoặc GPIO
+
+Do đó, volatile giúp đảm bảo rằng giá trị của biến 
+luôn được đọc trực tiếp từ bộ nhớ mỗi lần, không bị
+lưu vào bộ đệm hoặc tối ưu hóa quá mức.*/
 
 //BASE ADDRESS
 #define FLASH_BASEADDR       0x08000000U
@@ -54,33 +75,22 @@
 #define SPI2_BASEADDR     (APB1PERIPH_BASEADDR + 0x00003800U)
 #define SPI1_BASEADDR     (APB2PERIPH_BASEADDR + 0x00003000U)
 
-// NGẮT
+// INTERRUPT
 #define EXTI_BASEADDR       (APB2PERIPH_BASEADDR + 0x0400U)
 #define AFIO_BASEADDR       (APB2PERIPH_BASEADDR + 0x0000U)
 
+//NVIC
+#define NVIC_ISER0 ((__vo uint32_t *) 0xE000E100U)
+#define NVIC_ISER1 ((__vo uint32_t *) 0xE000E104U)
+#define NVIC_ISER2 ((__vo uint32_t *) 0xE000E108U)
+#define NVIC_ISER3 ((__vo uint32_t *) 0xE000E10CU)
 
+#define NVIC_ICER0 ((__vo uint32_t *) 0xE000E180U)
+#define NVIC_ICER1 ((__vo uint32_t *) 0xE000E184U)
+#define NVIC_ICER2 ((__vo uint32_t *) 0xE000E188U)
+#define NVIC_ICER3 ((__vo uint32_t *) 0xE000E18CU)
 
-
-
-#define __vo volatile 
-/*Trình biên dịch thường tối ưu hóa mã nguồn 
-để giảm bớt số lần truy cập vào một biến trong 
-quá trình thực thi, giả sử giá trị của nó không 
-thay đổi trong suốt chương trình. Tuy nhiên, 
-trong các ứng dụng nhúng (như với các vi xử lý
- hoặc các hệ thống phần cứng), các giá trị của
-  biến có thể thay đổi bởi các yếu tố bên ngoài như:
-
-//Bộ đếm thời gian (Timer)
-
-//Ngắt (Interrupts)
-
-Các thanh ghi phần cứng, đặc biệt là các thanh ghi
- I/O (Input/Output) hoặc GPIO
-
-Do đó, volatile giúp đảm bảo rằng giá trị của biến 
-luôn được đọc trực tiếp từ bộ nhớ mỗi lần, không bị
-lưu vào bộ đệm hoặc tối ưu hóa quá mức.*/
+#define NVIC_PR_BASEADDR ((__vo uint32_t*) 0xE000E400)
 
 
 // MEMORY MAP
@@ -93,7 +103,6 @@ typedef struct GPIO_RegDef
      __vo uint32_t BSRR;
      __vo uint32_t BRR;
      __vo uint32_t LCKR;
-     __vo uint32_t AFR[2];
 }GPIO_RegDef;
 #define GPIOA ((GPIO_RegDef*) GPIOA_BASEADDR)
 #define GPIOB ((GPIO_RegDef*) GPIOB_BASEADDR)
@@ -184,7 +193,7 @@ typedef struct AFIO_RegDef{
     volatile uint32_t EXTICR[4];  // External interrupt config regs  (offsets: 0x08–0x14)
     volatile uint32_t MAPR2;      // Additional remap register       (offset: 0x1C)
 } AFIO_RegDef;
-
+#define AFIO ((AFIO_RegDef*) AFIO_BASEADDR)
 //
 //======================================
 //
@@ -257,8 +266,29 @@ typedef struct AFIO_RegDef{
 #define GPIOG_REG_RESET()  do{ (RCC->APB2RSTR |= (1 << 8));  (RCC->APB2RSTR &= ~(1 << 8));  } while(0)
 
 
+#define GPIO_BASE_TO_CODE(x)   ((x == GPIOA) ? 0x0 : \
+                                (x == GPIOB) ? 0x1 : \
+                                (x == GPIOC) ? 0x2 : \
+                                (x == GPIOD) ? 0x3 : \
+                                (x == GPIOE) ? 0x4 : \
+                                (x == GPIOF) ? 0x5 : \
+                                (x == GPIOG) ? 0x6 : 0)
+                                
+#define EXTI0_IRQn       6
+#define EXTI1_IRQn       7
+#define EXTI2_IRQn       8
+#define EXTI3_IRQn       9
+#define EXTI4_IRQn       10
+#define EXTI9_5_IRQn     23
+#define EXTI15_10_IRQn   40
 
-
+#define EXTI_IRQ_MAP(x)        ((x == 0) ? EXTI0_IRQn : \
+                                (x == 1) ? EXTI1_IRQn : \
+                                (x == 2) ? EXTI2_IRQn : \
+                                (x == 3) ? EXTI3_IRQn : \
+                                (x == 4) ? EXTI4_IRQn : \
+                                (x >= 5 && x <= 9) ? EXTI9_5_IRQn : \
+                                EXTI15_10_IRQn)
 
 
 void delay_ms(uint32_t ms);
@@ -279,8 +309,8 @@ STEP 1: Define memory address of specific registers
 STEP 2: Mapping memory by using struct
 STEP 3: Config CLK for specific register (enable, disable)
 //stm32_gpio.h
-STEP 1: GPIO_Handle_T -> GPIO_RegDef
+STEP 4: GPIO_Handle_T -> GPIO_RegDef
                         . GPIO_PinDef
 
 
-*/
+*/ 
