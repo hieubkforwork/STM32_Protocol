@@ -27,6 +27,7 @@
 #define INPUT_PULLDOWN              2
 #define OUTPUT                      3
 #define IT                          4
+#define ALT                         5
 
 #define GPIO_MODE_ANALOG             0
 #define GPIO_MODE_INFLOAT            1

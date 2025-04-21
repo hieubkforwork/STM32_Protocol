@@ -29,7 +29,7 @@ void GPIO_Init(GPIO_Handle_T *pGPIO_Handle)
 
     uint32_t position = pGPIO_Handle->GPIO_PIN.GPIO_PinNumber;
     uint32_t temp = 0;
-    uint32_t shift = (position % 8) * 4;
+    uint32_t shift = (position % 8) * 4; // 1 thanh ghi 32 bits có 8 pin, mỗi pin 4 bits
 
     volatile uint32_t *config_reg;
 
@@ -54,8 +54,8 @@ void GPIO_Init(GPIO_Handle_T *pGPIO_Handle)
     uint8_t exti_pos;
     uint8_t port_code;
 
-    // Cấu hình EXTI cho interrupt (nếu cần)
-    AFIO_PCLK_EN();
+   
+   
 
     switch (pGPIO_Handle->GPIO_PIN.GPIO_PinMode)
     {
@@ -81,12 +81,18 @@ void GPIO_Init(GPIO_Handle_T *pGPIO_Handle)
         *config_reg |= (temp << shift);
         break;
     case GPIO_MODE_AF_PP:
-        /* code */
+        // CNF = 10, MODE = speed
+        temp = ((0x1 << 3) | (pGPIO_Handle->GPIO_PIN.GPIO_PinSpeed & 0x03));
+        *config_reg |= (temp << shift);
         break;
     case GPIO_MODE_AF_OD:
-        /* code */
+        // CNF = 10, MODE = speed
+        temp = ((0x03 << 2) | (pGPIO_Handle->GPIO_PIN.GPIO_PinSpeed & 0x03));
+        *config_reg |= (temp << shift);
         break;
     case GPIO_MODE_IT_FS:
+        AFIO_PCLK_EN();
+
         // CNF = 10, MODE = 00
         *config_reg |= (0x8 << shift); // CNF=10, MODE=00
         if (pGPIO_Handle->GPIO_PIN.GPIO_PinPull == GPIO_PULLUP)
@@ -107,6 +113,8 @@ void GPIO_Init(GPIO_Handle_T *pGPIO_Handle)
         AFIO->EXTICR[exti_index] |= (port_code << exti_pos);
         break;
     case GPIO_MODE_IT_RS:
+        AFIO_PCLK_EN();
+
         // CNF = 10, MODE = 00
         *config_reg |= (0x8 << shift); // CNF=10, MODE=00
         if (pGPIO_Handle->GPIO_PIN.GPIO_PinPull == GPIO_PULLUP)
@@ -276,7 +284,15 @@ void PinMode(GPIO_RegDef *pGPIOx, uint8_t PIN, uint8_t MODE)
             NVIC_IRQPriorityCfg(EXTI15_10_IRQn, 1);
             NVIC_IRQInterruptCfg(EXTI15_10_IRQn, ENABLE);
         }
-
+        break;
+    case ALT:
+        GPIO_Handle.GPIO_PIN.GPIO_PinNumber = PIN;
+        GPIO_Handle.GPIO_PIN.GPIO_PinMode = GPIO_MODE_AF_PP;
+        GPIO_Handle.GPIO_PIN.GPIO_PinSpeed = GPIO_SPEED_50MHZ;
+        GPIO_Handle.GPIO_PIN.GPIO_PinPull = GPIO_NOPULL;
+        GPIO_Init(&GPIO_Handle);
+    
+    
         break;
     default:
         break;
