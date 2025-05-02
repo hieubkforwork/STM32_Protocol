@@ -42,33 +42,50 @@ void SPI_DeInit(SPI_RegDef*pSPIx);
 
 void SPI_SendData(SPI_RegDef *pSPIx, uint8_t *pTxBuffer, uint32_t Len)
 {
-    if (pSPIx->CR1 & (1 << 11)) // DFF = 1 (16-bit mode)
-    {
-        uint16_t *pTxBuf16 = (uint16_t *)pTxBuffer;
-
-        while (Len > 0)
+    
+        uint32_t i = 0;
+    
+        if (pSPIx->CR1 & (1 << 11)) // Check if DFF = 1 (16-bit data frame format)
         {
-            while (!(pSPIx->SR & (1 << 1))); // Wait until TXE is set
-
-            pSPIx->DR = *pTxBuf16;
-            pTxBuf16++;     // nhảy 2 byte
-            Len -= 2;
+            uint16_t *data16 = (uint16_t *)pTxBuffer; // Cast to 16-bit pointer
+    
+            for (i = 0; i < Len / 2; i++)
+            {
+                // Wait until TXE (Transmit buffer empty)
+                while (!(pSPIx->SR & (1 << 1)));
+    
+                pSPIx->DR = data16[i];
+    
+                // Wait until BSY (Busy flag) is reset
+                while (pSPIx->SR & (1 << 7));
+            }
+    
+            if (Len % 2) // Nếu còn dư 1 byte
+            {
+                // Wait until TXE
+                while (!(pSPIx->SR & (1 << 1)));
+    
+                pSPIx->DR = ((uint16_t)pTxBuffer[Len - 1]) & 0x00FF; // Gửi 1 byte còn lại
+    
+                // Wait until BSY
+                while (pSPIx->SR & (1 << 7));
+            }
         }
-    }
-    else // DFF = 0 (8-bit mode)
-    {
-        while (Len > 0)
+        else // 8-bit data frame format
         {
-            while (!(pSPIx->SR & (1 << 1))); // Wait until TXE is set
-
-            pSPIx->DR = *pTxBuffer;
-            pTxBuffer++;
-            Len--;
+            for (i = 0; i < Len; i++)
+            {
+                // Wait until TXE (Transmit buffer empty)
+                while (!(pSPIx->SR & (1 << 1)));
+    
+                pSPIx->DR = pTxBuffer[i];
+    
+                // Wait until BSY (Busy flag) is reset
+                while (pSPIx->SR & (1 << 7));
+            }
         }
-    }
-
-    // Đợi SPI không bận nữa
-    while (pSPIx->SR & (1 << 7)); // BSY bit
+    
+    
 }
 
 
@@ -115,6 +132,14 @@ void SPI_PeripheralControl(SPI_RegDef *pSPIx, uint8_t STATE) {
         pSPIx->CR1 |= SPI_CR1_SPE;
     } else {
         pSPIx->CR1 &= ~SPI_CR1_SPE;
+    }
+}
+void SPI_SSOEConfig(SPI_RegDef*pSPIx,uint8_t STATE){
+    if(STATE == ENABLE){
+        pSPIx->CR2 |= (1 << 2);
+    }
+    else {
+        pSPIx->CR2 &= ~(1 << 2);
     }
 }
 

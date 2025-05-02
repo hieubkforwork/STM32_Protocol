@@ -10,17 +10,17 @@
 #define HALF_DUPLEX 2
 #define SIMPLE      3
 
-#define SPEED_DIV2    0
-#define SPEED_DIV4    1
-#define SPEED_DIV8    2
-#define SPEED_DIV16   3
-#define SPEED_DIV32   4
-#define SPEED_DIV64    5
-#define SPEED_DIV128   6
-#define SPEED_DIV256   7
+#define SPEED_DIV2    0x0
+#define SPEED_DIV4    0x1
+#define SPEED_DIV8    0x2
+#define SPEED_DIV16   0x3
+#define SPEED_DIV32   0x4
+#define SPEED_DIV64    0x5
+#define SPEED_DIV128   0x6
+#define SPEED_DIV256   0x7
 
-#define DFF_8BITS       1
-#define DFF_16BITS      2
+#define DFF_8BITS       0x0
+#define DFF_16BITS      0x1
 
 #define CPOL_HIGH       1
 #define CPOL_LOW        0
@@ -53,6 +53,7 @@ void SPI_PeripheralControl(SPI_RegDef *pSPIx, uint8_t STATE);
 void SPI_Init(SPI_Handle_T*pSPI_Handle);
 void SPI_DeInit(SPI_RegDef*pSPIx);  
 
+void SPI_SSOEConfig(SPI_RegDef*pSPIx,uint8_t STATE);
 void SPI_SendData(SPI_RegDef*pSPIx,uint8_t *pTxBuffer, uint32_t Len);
 void SPI_ReceiveData(SPI_RegDef*pSPIx,uint8_t *pRxBuffer, uint32_t Len);
 
@@ -62,4 +63,6 @@ void SPI_ReceiveDataIT(SPI_Handle_T*pSPI_Handle,uint8_t *pRxBuffer, uint32_t Len
 void SPI_IRQInterruptCfg(uint8_t IRQNum, uint8_t State);
 void SPI_IRQPriorityCfg(uint8_t IRQNum, uint32_t IRQPriority);
 void SPI_IRQHandling(SPI_Handle_T*pSPI_Handle);
+
+
 #endif

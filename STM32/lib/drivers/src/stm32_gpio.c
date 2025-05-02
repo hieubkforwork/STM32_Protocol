@@ -81,11 +81,13 @@ void GPIO_Init(GPIO_Handle_T *pGPIO_Handle)
         *config_reg |= (temp << shift);
         break;
     case GPIO_MODE_AF_PP:
+        AFIO_PCLK_EN();
         // CNF = 10, MODE = speed
         temp = ((0x1 << 3) | (pGPIO_Handle->GPIO_PIN.GPIO_PinSpeed & 0x03));
         *config_reg |= (temp << shift);
         break;
     case GPIO_MODE_AF_OD:
+        AFIO_PCLK_EN();
         // CNF = 10, MODE = speed
         temp = ((0x03 << 2) | (pGPIO_Handle->GPIO_PIN.GPIO_PinSpeed & 0x03));
         *config_reg |= (temp << shift);
